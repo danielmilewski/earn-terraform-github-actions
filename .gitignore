@@ -37,4 +37,9 @@ override.tf.json
 .terraformrc
 terraform.rc
 
+# original main.tf from the course is main.txt becasue it has aws providers not digital ocean
+
+main.txt
+
+
 # End of https://www.toptal.com/developers/gitignore/api/terraform
