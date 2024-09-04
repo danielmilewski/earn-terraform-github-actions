@@ -12,8 +12,7 @@ env:
   CONFIG_DIRECTORY: "./"
 
 jobs:
-
-build-and-push:
+  build-and-push:
     name: "Build and Push Docker Image"
     runs-on: ubuntu-latest
     steps:
@@ -65,4 +64,4 @@ build-and-push:
         id: apply
         with:
           run: ${{ steps.apply-run.outputs.run_id }}
-          comment: "Apply Run from GitHub Actions CI ${{ github.sha }}"
+
