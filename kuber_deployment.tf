@@ -23,7 +23,7 @@ resource "kubernetes_deployment" "doctl_kubectl" {
         container {
           image = "registry.digitalocean.com/k8s1/doctl_kubectl:${var.docker_image_tag}"
           name  = "doctl_kubectl"
-          ports {
+          port {
             container_port = 80
           }
         }
