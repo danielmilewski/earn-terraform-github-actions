@@ -10,6 +10,7 @@ env:
   TF_API_TOKEN: "${{ secrets.TF_API_TOKEN }}"
   TF_WORKSPACE: "learn-terraform-github-action"
   CONFIG_DIRECTORY: "./"
+  DOCKER_IMAGE: "registry.digitalocean.com/k8s1/doctl_kubectl"
 
 jobs:
   build-and-push:
@@ -24,24 +25,24 @@ jobs:
 
       - name: Log in to DigitalOcean Container Registry
         run: echo "${{ secrets.DO_API_TOKEN }}" | docker login registry.digitalocean.com -u doctl --password-stdin
-          
+
       - name: Build Docker Image
-        run: docker build -t registry.digitalocean.com/k8s1/doctl_kubectl:${{ github.sha }} .
+        run: docker build -t ${{ env.DOCKER_IMAGE }}:${{ github.sha }} .
 
       - name: Push Docker Image
-        run: docker push registry.digitalocean.com/k8s1/doctl_kubectl:${{ github.sha }}
+        run: docker push ${{ env.DOCKER_IMAGE }}:${{ github.sha }}
 
       - name: Log out of Docker
         run: docker logout registry.digitalocean.com
-  
+
   terraform:
-    if: github.repository != 'hashicorp-education/learn-terraform-github-actions'
     name: "Terraform Apply"
     runs-on: ubuntu-latest
+    needs: build-and-push  # Ensure Terraform only runs after the Docker image is pushed
     permissions:
       contents: read
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v3
 
       - name: Upload Configuration
@@ -58,10 +59,11 @@ jobs:
           workspace: ${{ env.TF_WORKSPACE }}
           configuration_version: ${{ steps.apply-upload.outputs.configuration_version_id }}
 
-      - name: Apply
+      - name: Apply Terraform Configuration
         uses: hashicorp/tfc-workflows-github/actions/apply-run@v1.0.0
         if: fromJSON(steps.apply-run.outputs.payload).data.attributes.actions.IsConfirmable
         id: apply
         with:
           run: ${{ steps.apply-run.outputs.run_id }}
+          comment: "Apply Run from GitHub Actions CI ${{ github.sha }}"
 
