@@ -1,6 +1,6 @@
 resource "kubernetes_deployment" "doctl_kubectl" {
   metadata {
-    name = "doctl_kubectl"
+    name = "doctl-kubectl"  # Updated to use hyphens instead of underscores
   }
 
   spec {
@@ -8,21 +8,21 @@ resource "kubernetes_deployment" "doctl_kubectl" {
 
     selector {
       match_labels = {
-        app = "doctl_kubectl"
+        app = "doctl-kubectl"  # Updated to use hyphens
       }
     }
 
     template {
       metadata {
         labels = {
-          app = "doctl_kubectl"
+          app = "doctl-kubectl"  # Updated to use hyphens
         }
       }
 
       spec {
         container {
           image = "registry.digitalocean.com/k8s1/doctl_kubectl:${var.docker_image_tag}"
-          name  = "doctl_kubectl"
+          name  = "doctl-kubectl"  # Updated to use hyphens
           port {
             container_port = 80
           }
