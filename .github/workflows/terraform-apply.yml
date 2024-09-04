@@ -25,12 +25,12 @@ build-and-push:
 
       - name: Log in to DigitalOcean Container Registry
         run: echo "${{ secrets.DO_API_TOKEN }}" | docker login registry.digitalocean.com -u doctl --password-stdin
-     
+          
       - name: Build Docker Image
-        run: docker build -t registry.digitalocean.com/k8s1/k8s1:${{ github.sha }} .
+        run: docker build -t registry.digitalocean.com/k8s1/doctl_kubectl:${{ github.sha }} .
 
       - name: Push Docker Image
-        run: docker push registry.digitalocean.com/k8s1/k8s1:${{ github.sha }}
+        run: docker push registry.digitalocean.com/k8s1/doctl_kubectl:${{ github.sha }}
 
       - name: Log out of Docker
         run: docker logout registry.digitalocean.com
