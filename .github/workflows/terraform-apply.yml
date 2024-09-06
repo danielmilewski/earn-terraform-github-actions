@@ -1,4 +1,4 @@
-name: "Terraform Apply"
+name: Terraform Apply
 
 on:
   push:
@@ -10,7 +10,7 @@ env:
   TF_API_TOKEN: "${{ secrets.TF_API_TOKEN }}"
   TF_WORKSPACE: "learn-terraform-github-action"
   CONFIG_DIRECTORY: "./"
-  DOCKER_IMAGE: "registry.digitalocean.com/k8s1/doctl_kubectl"
+  DOCKER_IMAGE: "registry.digitalocean.com/k8s1/doctl_kubectl"  # Ensure this is correct
 
 jobs:
   build-and-push:
@@ -66,21 +66,4 @@ jobs:
         with:
           run: ${{ steps.apply-run.outputs.run_id }}
           comment: "Apply Run from GitHub Actions CI ${{ github.sha }}"
-
-  kube-config:
-    name: "Configure Kubernetes and Run Commands"
-    runs-on: ubuntu-latest
-    needs: terraform
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Run doctl and kubectl commands
-        uses: docker://registry.digitalocean.com/k8s1/doctl_kubectl:${{ github.sha }}
-        with:
-          entrypoint: /bin/sh
-          args: -c "doctl kubernetes cluster kubeconfig save <cluster-id> && kubectl get nodes"
 
