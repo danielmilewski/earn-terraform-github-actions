@@ -18,7 +18,7 @@ jobs:
       contents: read
       pull-requests: write
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v3
 
       - name: Upload Configuration
@@ -78,3 +78,4 @@ jobs:
               repo: context.repo.repo,
               body: output
             });
+
