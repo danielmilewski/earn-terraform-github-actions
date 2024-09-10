@@ -20,9 +20,7 @@ jobs:
       - name: Get Docker image tag
         id: get-tag
         run: |
-          # Fetch the latest tag from the registry
           TAG=$(curl -s https://registry.digitalocean.com/v2/k8s1/doctl_kubectl/tags/list | jq -r '.tags[]' | sort -V | tail -n 1)
-          echo "Latest Docker tag: ${TAG}"  # Debug output
           echo "TAG=${TAG}" >> $GITHUB_ENV
 
       # Verify Docker image tag
