@@ -14,7 +14,7 @@ jobs:
 
       - name: Create Kubernetes Cluster
         run: |
-          doctl kubernetes cluster create <your-cluster-name> \
+          doctl kubernetes cluster create my-k8s-cluster \
             --region nyc1 \
             --node-pool "name=default;size=s-2vcpu-4gb;count=2" \
             --wait

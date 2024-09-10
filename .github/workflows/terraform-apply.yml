@@ -2,68 +2,39 @@ name: Terraform Apply
 
 on:
   push:
-    branches:
-      - main
+    paths:
+      - 'main.tf'
+      - 'container_registry.tf'
+      - 'path/to/other/terraform/files/**'  # Adjust this to match your Terraform files' locations
 
 env:
   TF_CLOUD_ORGANIZATION: "infra-test-90"
   TF_API_TOKEN: "${{ secrets.TF_API_TOKEN }}"
   TF_WORKSPACE: "learn-terraform-github-action"
   CONFIG_DIRECTORY: "./"
-  DOCKER_IMAGE: "registry.digitalocean.com/k8s1/doctl_kubectl"  # Ensure this is correct
 
 jobs:
-  build-and-push:
-    name: "Build and Push Docker Image"
+  terraform-apply:
+    name: "Apply Terraform Configuration"
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Log in to DigitalOcean Container Registry
-        run: echo "${{ secrets.DO_API_TOKEN }}" | docker login registry.digitalocean.com -u doctl --password-stdin
-
-      - name: Build Docker Image
-        run: docker build -t ${{ env.DOCKER_IMAGE }}:${{ github.sha }} .
-
-      - name: Push Docker Image
-        run: docker push ${{ env.DOCKER_IMAGE }}:${{ github.sha }}
-
-      - name: Log out of Docker
-        run: docker logout registry.digitalocean.com
-
-  terraform:
-    name: "Terraform Apply"
-    runs-on: ubuntu-latest
-    needs: build-and-push  # Ensure Terraform only runs after the Docker image is pushed
-    permissions:
-      contents: read
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Upload Configuration
-        uses: hashicorp/tfc-workflows-github/actions/upload-configuration@v1.0.0
-        id: apply-upload
+      - name: Set up Terraform CLI
+        uses: hashicorp/setup-terraform@v2
         with:
-          workspace: ${{ env.TF_WORKSPACE }}
-          directory: ${{ env.CONFIG_DIRECTORY }}
+          terraform_version: 1.5.0  # Adjust to the version you need
 
-      - name: Create Apply Run
-        uses: hashicorp/tfc-workflows-github/actions/create-run@v1.0.0
-        id: apply-run
-        with:
-          workspace: ${{ env.TF_WORKSPACE }}
-          configuration_version: ${{ steps.apply-upload.outputs.configuration_version_id }}
+      - name: Terraform Init
+        run: terraform init
 
-      - name: Apply Terraform Configuration
-        uses: hashicorp/tfc-workflows-github/actions/apply-run@v1.0.0
-        if: fromJSON(steps.apply-run.outputs.payload).data.attributes.actions.IsConfirmable
-        id: apply
-        with:
-          run: ${{ steps.apply-run.outputs.run_id }}
-          comment: "Apply Run from GitHub Actions CI ${{ github.sha }}"
+      - name: Terraform Plan
+        run: terraform plan
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
+        env:
+          TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}  # If using Terraform Cloud or Enterprise
 
