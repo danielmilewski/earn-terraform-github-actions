@@ -34,15 +34,10 @@ jobs:
             echo "Error: Docker image tag is not set"
             exit 1
           fi
-
           docker run --rm \
             -e DO_API_TOKEN=${{ secrets.DO_API_TOKEN }} \
-            registry.digitalocean.com/k8s1/doctl_kubectl:${{ env.TAG }} /bin/sh -c "
-              # Initialize doctl with the access token
-              doctl auth init --access-token \$DO_API_TOKEN &&
-              # Create Kubernetes cluster
-              doctl kubernetes cluster create my-cluster --region nyc1
-            "
+            registry.digitalocean.com/k8s1/doctl_kubectl:${{ env.TAG }} /bin/sh -c \
+              'doctl auth init --access-token $DO_API_TOKEN && doctl kubernetes cluster create my-cluster --region nyc1'
 
       # Log out from DigitalOcean Container Registry
       - name: Log out of Docker
