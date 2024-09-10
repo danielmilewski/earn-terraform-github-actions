@@ -1,0 +1,41 @@
+name: Terraform - Create Container Registry and Push Docker Image
+
+on:
+  push:
+    paths:
+      - 'container_registry.tf'
+      - 'Dockerfile'
+
+jobs:
+  terraform:
+    name: "Create Container Registry and Push Docker Image"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.5.0  # Adjust to the version you're using
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Apply (Create Registry)
+        run: terraform apply -auto-approve
+
+      # Log in to the created DigitalOcean container registry
+      - name: Log in to DigitalOcean Container Registry
+        run: |
+          doctl registry login --access-token ${{ secrets.DO_API_TOKEN }}
+
+      - name: Build Docker image
+        run: docker build -t registry.digitalocean.com/k8s1/doctl_kubectl .
+
+      - name: Push Docker image to DigitalOcean registry
+        run: |
+          docker tag registry.digitalocean.com/k8s1/doctl_kubectl:latest
+          docker push registry.digitalocean.com/k8s1/doctl_kubectl:latest
+
