@@ -1,4 +1,3 @@
-
 terraform {
   required_providers {
     digitalocean = {
@@ -8,18 +7,19 @@ terraform {
   }
 }
 
-
 terraform {
- backend "remote" {
-  organization = "infra-test-90"
-  workspaces {
-  name = "learn-terraform-github-action"
+  backend "remote" {
+    organization = "infra-test-90"
+    workspaces {
+      name = "learn-terraform-github-action"
+    }
   }
- }
 }
 
 variable "do_token" {
-  sensitive = true
+  description = "DigitalOcean API Token"
+  type        = string
+  sensitive   = true
 }
 
 variable "docker_image_tag" {
@@ -28,10 +28,7 @@ variable "docker_image_tag" {
   default     = "latest"
 }
 
-
-# Configure the DigitalOcean Provider
 provider "digitalocean" {
   token = var.do_token
 }
-
 
