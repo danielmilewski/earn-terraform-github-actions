@@ -1,7 +1,3 @@
-provider "digitalocean" {
-  token = var.do_token
-}
-
 resource "digitalocean_kubernetes_cluster" "k8s_cluster" {
   name   = "example-k8s-cluster"
   region = "lon1"
