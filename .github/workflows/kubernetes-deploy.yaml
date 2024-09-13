@@ -1,0 +1,44 @@
+name: Deploy to Kubernetes
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  DOCKER_IMAGE: "registry.digitalocean.com/k8s1/doctl_kubectl:latest"  # Replace with the actual image path in DOCR
+  KUBECONFIG_PATH: "/tmp/kubeconfig"
+  DEPLOYMENT_PATH: "./deployments"
+
+jobs:
+  deploy:
+    name: Deploy to Kubernetes
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Pull Docker image with doctl and kubectl
+        run: |
+          docker pull ${{ env.DOCKER_IMAGE }}
+
+      - name: Authenticate with DigitalOcean
+        run: |
+          echo "${{ secrets.DO_TOKEN }}" | docker login --username do --password-stdin registry.digitalocean.com
+
+      - name: Download kubeconfig with doctl
+        run: |
+          docker run --rm \
+            -v "${{ github.workspace }}:${{ github.workspace }}" \
+            ${{ env.DOCKER_IMAGE }} \
+            doctl kubernetes cluster kubeconfig save example-k8s-cluster --kubeconfig ${KUBECONFIG_PATH}
+
+      - name: Apply Kubernetes resources using kubectl
+        run: |
+          docker run --rm \
+            -v "${{ github.workspace }}:${{ github.workspace }}" \
+            -v ${KUBECONFIG_PATH}:${KUBECONFIG_PATH} \
+            ${{ env.DOCKER_IMAGE }} \
+            kubectl --kubeconfig=${KUBECONFIG_PATH} apply -f ${DEPLOYMENT_PATH}/nginx-deployment.yaml
+
