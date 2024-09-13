@@ -22,4 +22,3 @@ RUN kubectl version --client && \
 
 # Set the entrypoint to bash
 ENTRYPOINT ["/bin/bash"]
-
