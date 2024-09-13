@@ -1,37 +1,35 @@
-name: Deploy to Kubernetes on YAML Change
+name: Deploy to Kubernetes
 
 on:
-  push:
-    paths:
-      - 'deployments/**/*.yaml'  # Trigger on changes to YAML files in the deployments folder
+  workflow_dispatch:  # Allows manual triggering from the GitHub Actions tab
 
 jobs:
   deploy:
-    name: "Deploy to Kubernetes"
+    name: "Deploy to Kubernetes Cluster"
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Docker Buildx
+      - name: Set up Docker
         uses: docker/setup-buildx-action@v2
 
       - name: Log in to DigitalOcean Container Registry
         run: echo "${{ secrets.DO_API_TOKEN }}" | docker login registry.digitalocean.com -u doctl --password-stdin
 
       - name: Pull Docker Image
-        run: docker pull registry.digitalocean.com/k8s1/doctl_kubectl:${{ github.sha }}
+        run: docker pull registry.digitalocean.com/k8s1/doctl_kubectl:latest
 
-      - name: Run kubectl commands
+      - name: Download kubeconfig using doctl
         run: |
           docker run --rm \
-            -e DO_API_TOKEN=${{ secrets.DO_API_TOKEN }} \
-            -e KUBECONFIG_PATH=/tmp/kubeconfig \
-            registry.digitalocean.com/k8s1/doctl_kubectl /bin/sh -c "
-              # Initialize doctl with the access token
-              doctl auth init --access-token $DO_API_TOKEN &&
-              # Get kubeconfig and apply deployments
-              kubectl --kubeconfig $KUBECONFIG_PATH apply -f /deployments
-            "
+            -e DO_API_TOKEN="${{ secrets.DO_API_TOKEN }}" \
+            registry.digitalocean.com/k8s1/doctl_kubectl:latest \
+            doctl kubernetes cluster kubeconfig save ${CLUSTER_NAME}
+        env:
+          CLUSTER_NAME: "example-k8s-cluster"  # Replace with your cluster name
+
+      - name: Clean up
+        run: docker logout registry.digitalocean.com
 
