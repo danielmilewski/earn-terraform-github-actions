@@ -1,8 +1,11 @@
-# Use the latest Alpine Linux as the base image
-FROM alpine:latest
+FROM debian:bullseye-slim
 
 # Install necessary dependencies
-RUN apk add --no-cache curl ca-certificates bash
+RUN apt-get update && apt-get install -y \
+    curl \
+    ca-certificates \
+    bash && \
+    rm -rf /var/lib/apt/lists/*
 
 # Install kubectl (latest version)
 RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
@@ -17,8 +20,7 @@ RUN curl -LO https://github.com/digitalocean/doctl/releases/download/v1.114.0/do
 
 # Verify installations
 RUN kubectl version --client && \
-    doctl version && \
-    ls -l /usr/local/bin/doctl
+    doctl version
 
 # Set the entrypoint to bash
 ENTRYPOINT ["/bin/bash"]
