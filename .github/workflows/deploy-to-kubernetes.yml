@@ -37,6 +37,7 @@ jobs:
             registry.digitalocean.com/k8s1/doctl_kubectl:latest \
             bash -c 'doctl kubernetes cluster kubeconfig save ${CLUSTER_NAME}'
 
+
       - name: Clean up
         run: docker logout registry.digitalocean.com
 
