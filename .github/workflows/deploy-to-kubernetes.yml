@@ -29,17 +29,7 @@ jobs:
             doctl kubernetes cluster kubeconfig save ${CLUSTER_NAME}
         env:
           CLUSTER_NAME: "example-k8s-cluster"  # Replace with your cluster name
-
-      - name: Apply Kubernetes Resources
-        run: |
-          docker run --rm \
-            -v $HOME/.kube/config:/root/.kube/config \
-            -v $GITHUB_WORKSPACE/deployments:/deployments \
-            registry.digitalocean.com/k8s1/doctl_kubectl:latest \
-            kubectl apply -f /deployments
-        env:
-          KUBECONFIG: $HOME/.kube/config
-
+          
       - name: Clean up
         run: docker logout registry.digitalocean.com
 
