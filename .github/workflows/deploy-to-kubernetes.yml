@@ -26,18 +26,17 @@ jobs:
       - name: List Docker Networks
         run: docker network ls
 
-      # Step 2: Use the Docker image from DigitalOcean Container Registry
-      - name: Run commands inside the Docker image
-        uses: docker://registry.digitalocean.com/k8s1/doctl_kubectl:latest
-        with:
-          entrypoint: ["/bin/sh", "-c"]
+      # Step 2: Run commands inside the Docker image
+      - name: Run commands inside the Docker container
         run: |
-          # Authenticate with DigitalOcean API
-          doctl auth init -t ${{ secrets.DO_API_TOKEN }}
-          
-          # Retrieve kubeconfig from your Kubernetes cluster
-          doctl kubernetes cluster kubeconfig save example-k8s-cluster  # Replace with your actual cluster name
-          
-          # Apply the Kubernetes manifests
-          kubectl apply -f deployments/
+          docker run --rm \
+            -e DO_API_TOKEN=${{ secrets.DO_API_TOKEN }} \
+            registry.digitalocean.com/k8s1/doctl_kubectl:latest /bin/sh -c "
+            # Authenticate with DigitalOcean API
+            doctl auth init -t \$DO_API_TOKEN
+            # Retrieve kubeconfig from your Kubernetes cluster
+            doctl kubernetes cluster kubeconfig save example-k8s-cluster  # Replace with your actual cluster name
+            # Apply the Kubernetes manifests
+            kubectl apply -f deployments/
+            "
 
