@@ -9,6 +9,9 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
+    container:
+      image: registry.digitalocean.com/k8s1/doctl_kubectl:latest
+
     steps:
       # Step 1: Log in to DigitalOcean Container Registry
       - name: Log in to DigitalOcean Container Registry
@@ -26,18 +29,13 @@ jobs:
       - name: List Docker Networks
         run: docker network ls
 
-      # Step 2: Use the Docker image from DigitalOcean Container Registry
-      - name: Run commands inside the Docker image
-        uses: docker://registry.digitalocean.com/k8s1/doctl_kubectl:latest
-        with:
-          entrypoint: ["/bin/sh", "-c"]
+      # Step 2: Run commands inside the container
+      - name: Authenticate with DigitalOcean and apply Kubernetes manifests
         run: |
           # Authenticate with DigitalOcean API
           doctl auth init -t ${{ secrets.DO_API_TOKEN }}
-          
           # Retrieve kubeconfig from your Kubernetes cluster
           doctl kubernetes cluster kubeconfig save example-k8s-cluster  # Replace with your actual cluster name
-          
           # Apply the Kubernetes manifests
           kubectl apply -f deployments/
 
