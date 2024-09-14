@@ -1,4 +1,4 @@
-name: Test Docker Image from DigitalOcean
+name: Build and Push Docker Image to DigitalOcean
 
 on:
   push:
@@ -7,25 +7,21 @@ on:
   workflow_dispatch: # Allows manual triggering
 
 jobs:
-  test-image:
+  build-and-push:
     runs-on: ubuntu-latest
     steps:
-      # Step 1: Log in to the DigitalOcean Container Registry
+      # Step 1: Set up Docker Buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      # Step 2: Log in to the DigitalOcean Container Registry
       - name: Log in to DigitalOcean Container Registry
-        run: echo "${{ secrets.DO_TOKEN }}" | docker login registry.digitalocean.com -u doctl --password-stdin
+        run: echo "${{ secrets.DO_API_TOKEN }}" | docker login registry.digitalocean.com -u doctl --password-stdin
 
-      # Step 2: Pull the image
-      - name: Pull Docker image from DigitalOcean Registry
-        run: docker pull registry.digitalocean.com/k8s1/doctl_kubectl:latest
-
-      # Step 3: Run a test command inside the Docker container
-      - name: Run test command
+      # Step 3: Build and push the Docker image for ARM64 platform
+      - name: Build and Push Docker Image
         run: |
-          docker run --rm \
-            -e DO_API_TOKEN=${{ secrets.DO_TOKEN }} \
-            registry.digitalocean.com/k8s1/doctl_kubectl:latest /bin/bash -c "
-            # Verify the presence of doctl and kubectl
-            doctl version;
-            kubectl version --client;
-          "
+          docker buildx build --platform linux/arm64 \
+            -t registry.digitalocean.com/k8s1/doctl_kubectl:latest \
+            --push \
 
