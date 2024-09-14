@@ -1,12 +1,12 @@
+---
 name: Run doctl
-
 on:
   push:
     branches:
       - main
-
 jobs:
   doctl:
+
     runs-on: ubuntu-latest  # The GitHub Actions runner environment
 
     steps:
@@ -20,6 +20,7 @@ jobs:
           image: registry.digitalocean.com/k8s1/doctl_kubectl:latest
 
         # Step 3: Run commands inside the container
+        
         run: |
           # Run doctl to save the kubeconfig
           doctl kubernetes cluster kubeconfig save example-k8s-cluster  # Replace with your actual cluster name
