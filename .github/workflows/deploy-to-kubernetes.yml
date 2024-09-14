@@ -8,17 +8,33 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    container:
-      image: registry.digitalocean.com/k8s1/doctl_kubectl:latest
-      credentials:
-        password: ${{ secrets.DO_API_TOKEN }}
 
     steps:
-      - name: Authenticate with DigitalOcean API
-        run: doctl auth init -t ${{ secrets.DO_API_TOKEN }}
+      # Step 1: Log in to DigitalOcean Container Registry
+      - name: Log in to DigitalOcean Container Registry
+        run: echo "${{ secrets.DO_API_TOKEN }}" | docker login registry.digitalocean.com -u doctl --password-stdin
 
-      - name: Retrieve kubeconfig and apply manifests
+      # Debug: Check Docker login
+      - name: Debug Docker Login
+        run: docker info
+
+      # Debug: Verify available Docker images
+      - name: List Docker Images
+        run: docker images
+
+      # Debug: Verify available Docker networks
+      - name: List Docker Networks
+        run: docker network ls
+
+      # Step 2: Use the Docker image from DigitalOcean Container Registry
+      - name: Run commands inside the Docker image
+        uses: docker://registry.digitalocean.com/k8s1/doctl_kubectl:latest
+        with:
+          entrypoint: ["/bin/sh", "-c"]
         run: |
+          # Authenticate with DigitalOcean API
+          doctl auth init -t ${{ secrets.DO_API_TOKEN }}
+          
           # Retrieve kubeconfig from your Kubernetes cluster
           doctl kubernetes cluster kubeconfig save example-k8s-cluster  # Replace with your actual cluster name
           
