@@ -6,20 +6,28 @@ on:
       - main
 
 jobs:
-  doctl:
-    # Use the container image for the entire job
+  login:
+    runs-on: ubuntu-latest
+    outputs:
+      login-success: ${{ steps.login.outputs.success }}
+    steps:
+      - name: Log in to DigitalOcean Container Registry
+        id: login
+        run: |
+          echo "${{ secrets.DO_API_TOKEN }}" | docker login registry.digitalocean.com -u doctl --password-stdin
+          echo "success=true" >> $GITHUB_ENV
+
+  deploy:
+    needs: login
+    runs-on: ubuntu-latest
     container:
       image: registry.digitalocean.com/k8s1/doctl_kubectl:latest
 
-    runs-on: ubuntu-latest  # Runner environment
-
     steps:
-      # Step 1: Log in to DigitalOcean Container Registry
-      - name: Log in to DigitalOcean Container Registry
-        run: echo "${{ secrets.DO_API_TOKEN }}" | docker login registry.digitalocean.com -u doctl --password-stdin
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-      # Step 2: Run commands inside the container
-      - name: Run commands
+      - name: Run commands inside the container
         run: |
           # Run doctl to save the kubeconfig
           doctl kubernetes cluster kubeconfig save example-k8s-cluster  # Replace with your actual cluster name
