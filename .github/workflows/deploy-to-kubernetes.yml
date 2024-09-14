@@ -1,4 +1,4 @@
-name: Run doctl
+name: Deploy to Kubernetes
 
 on:
   push:
@@ -6,32 +6,23 @@ on:
       - main
 
 jobs:
-  login:
-    runs-on: ubuntu-latest
-    outputs:
-      login-success: ${{ steps.login.outputs.success }}
-    steps:
-      - name: Log in to DigitalOcean Container Registry
-        id: login
-        run: |
-          echo "${{ secrets.DO_API_TOKEN }}" | docker login registry.digitalocean.com -u doctl --password-stdin
-          echo "success=true" >> $GITHUB_ENV
-
   deploy:
-    needs: login
     runs-on: ubuntu-latest
     container:
       image: registry.digitalocean.com/k8s1/doctl_kubectl:latest
+      # Only needed if using a private registry
+      credentials:
+        password: ${{ secrets.DO_API_TOKEN }}
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - name: Authenticate with DigitalOcean API
+        run: doctl auth init -t ${{ secrets.DO_API_TOKEN }}
 
-      - name: Run commands inside the container
+      - name: Retrieve kubeconfig and apply manifests
         run: |
-          # Run doctl to save the kubeconfig
+          # Retrieve kubeconfig from your Kubernetes cluster
           doctl kubernetes cluster kubeconfig save example-k8s-cluster  # Replace with your actual cluster name
           
-          # Run kubectl to interact with the Kubernetes cluster
-          kubectl get nodes
+          # Apply the Kubernetes manifests
+          kubectl apply -f deployments/
 
