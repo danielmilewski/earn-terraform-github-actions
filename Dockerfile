@@ -6,6 +6,7 @@ RUN apt-get update && apt-get install -y \
     curl \
     ca-certificates \
     bash \
+    file \ 
     && apt-get clean
 
 # Install kubectl (latest version)
@@ -22,7 +23,9 @@ RUN curl -LO https://github.com/digitalocean/doctl/releases/download/v1.114.0/do
 # Verify installations
 RUN kubectl version --client && \
     doctl version && \
-    ls -l /usr/local/bin/doctl
+    ls -l /usr/local/bin/doctl && \
+    file /usr/local/bin/kubectl && \
+    file /usr/local/bin/doctl
 
 # Set the entrypoint to bash
 ENTRYPOINT ["/bin/bash"]
