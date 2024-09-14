@@ -6,15 +6,25 @@ on:
       - main
 jobs:
   doctl:
-    runs-on: registry.digitalocean.com/k8s1/doctl_kubectl:latest
+
+    runs-on: ubuntu-latest  # The GitHub Actions runner environment
+
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
-      - name: Run doctl
-        run: >
-          doctl kubernetes cluster kubeconfig save example-k8s-cluster  # Replace
-          with your actual cluster name
-      - name: Run kubectl
+      # Step 1: Log in to DigitalOcean Container Registry
+      - name: Log in to DigitalOcean Container Registry
+        run: echo "${{ secrets.DO_API_TOKEN }}" | docker login registry.digitalocean.com -u doctl --password-stdin
+
+      # Step 2: Run the job inside the Docker image from the DigitalOcean Container Registry
+      - name: Run commands in the container
+        container:
+          image: registry.digitalocean.com/k8s1/doctl_kubectl:latest
+
+        # Step 3: Run commands inside the container
+        
         run: |
+          # Run doctl to save the kubeconfig
+          doctl kubernetes cluster kubeconfig save example-k8s-cluster  # Replace with your actual cluster name
+          
+          # Run kubectl to interact with the Kubernetes cluster
           kubectl get nodes
 
