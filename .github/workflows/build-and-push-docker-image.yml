@@ -10,12 +10,18 @@ jobs:
   build-and-push-image:
     runs-on: ubuntu-latest
     steps:
-      # Step 1: Log in to the DigitalOcean Container Registry
-      - name: Log in to DigitalOcean Container Registry
-        run: |
-          echo "${{ secrets.DO_API_TOKEN }}" | docker login registry.digitalocean.com -u doctl --password-stdin
+      # Step 1: Check out the repository
+      - name: Check out repository
+        uses: actions/checkout@v3
 
-      # Step 2: Build and push the Docker image
+      # Step 2: Log in to the DigitalOcean Container Registry
+      - name: Log in to DigitalOcean Container Registry
+        env:
+          DOCKER_PASSWORD: ${{ secrets.DO_TOKEN }}
+        run: |
+          docker login registry.digitalocean.com -u doctl --password-stdin <<< "$DOCKER_PASSWORD"
+
+      # Step 3: Build and push the Docker image
       - name: Build and Push Docker Image
         run: |
           docker buildx build --platform linux/arm64 \
