@@ -17,7 +17,7 @@ jobs:
       # Step 2: Log in to the DigitalOcean Container Registry
       - name: Log in to DigitalOcean Container Registry
         env:
-          DOCKER_PASSWORD: ${{ secrets.DO_TOKEN }}
+          DOCKER_PASSWORD: ${{ secrets.DO_API_TOKEN }}
         run: |
           docker login registry.digitalocean.com -u doctl --password-stdin <<< "$DOCKER_PASSWORD"
 
