@@ -24,7 +24,8 @@ jobs:
 
       # Step 4: Log in to the DigitalOcean Container Registry
       - name: Log in to DigitalOcean Container Registry
-        run: echo "${{ secrets.DO_API_TOKEN }}" | docker login registry.digitalocean.com -u doctl --password-stdin
+        run: |
+          : echo "${{ secrets.DO_API_TOKEN }}" | docker login registry.digitalocean.com -u doctl --password-stdin
 
       # Step 5: Build and push the Docker image
       - name: Build and Push Docker Image
