@@ -27,14 +27,21 @@ jobs:
         run: |
           echo "${{ secrets.DO_API_TOKEN }}" | docker login registry.digitalocean.com -u doctl --password-stdin
 
-      # Step 5: Build and push the Docker image
-      - name: Build and Push Docker Image
+      # Step 5: Build the Docker image
+      - name: Build Docker Image
         run: |
           docker buildx build --platform linux/arm64 \
-            -t registry.digitalocean.com/k8s1/doctl_kubectl:latest \
-            --push \
             --file Dockerfile \
-            .
-      - name: List Docker Images
-        run: docker images
+            --tag registry.digitalocean.com/k8s1/doctl_kubectl:build \
+            --output type=docker .
+          
+      # Step 6: Tag the Docker image
+      - name: Tag Docker Image
+        run: |
+          docker tag registry.digitalocean.com/k8s1/doctl_kubectl:build registry.digitalocean.com/k8s1/doctl_kubectl:latest
+
+      # Step 7: Push the Docker image
+      - name: Push Docker Image
+        run: |
+          docker push registry.digitalocean.com/k8s1/doctl_kubectl:latest
 
