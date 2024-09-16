@@ -16,7 +16,7 @@ jobs:
 
       # Step 2: Set up QEMU for ARM64 builds
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
+        uses: docker/setup-qemu-action@v3
 
       # Step 3: Set up Docker Buildx
       - name: Set up Docker Buildx
