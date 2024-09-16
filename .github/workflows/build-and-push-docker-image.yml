@@ -20,10 +20,12 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          docker build -t registry.digitalocean.com/k8s1/doctl_kubectl:latest .
+          docker build -t registry.digitalocean.com/k8s1/doctl_kubectl:${{ github.sha }} .
+          docker tag registry.digitalocean.com/k8s1/doctl_kubectl:${{ github.sha }} registry.digitalocean.com/k8s1/doctl_kubectl:latest
 
       - name: Push Docker Image
         run: |
+          docker push registry.digitalocean.com/k8s1/doctl_kubectl:${{ github.sha }}
           docker push registry.digitalocean.com/k8s1/doctl_kubectl:latest
 
       - name: Log out of Docker
