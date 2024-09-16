@@ -1,7 +1,7 @@
 # Use the latest Alpine Linux as the base image
 FROM alpine:latest
 
-# Install necessary dependencies
+# Install necessary dependencies including bash
 RUN apk add --no-cache curl ca-certificates bash
 
 # Install kubectl (latest version)
@@ -20,6 +20,6 @@ RUN kubectl version --client && \
     doctl version && \
     ls -l /usr/local/bin/doctl
 
-# Set the entrypoint to bash
-ENTRYPOINT ["/bin/bash"]
+# Set the entrypoint to sh
+ENTRYPOINT ["/bin/sh"]
 
