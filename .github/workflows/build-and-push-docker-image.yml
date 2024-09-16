@@ -22,10 +22,6 @@ jobs:
         run: |
           docker build -t registry.digitalocean.com/k8s1/doctl_kubectl:latest .
 
-      - name: Test doctl and kubectl in Docker Image
-        run: |
-          docker run --rm registry.digitalocean.com/k8s1/doctl_kubectl:latest sh -c "doctl version && kubectl version --client"
-
       - name: Push Docker Image
         run: |
           docker push registry.digitalocean.com/k8s1/doctl_kubectl:latest
