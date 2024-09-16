@@ -23,4 +23,3 @@ jobs:
             doctl auth init -t \$DO_API_TOKEN && \
             kubectl get nodes
             "
-
