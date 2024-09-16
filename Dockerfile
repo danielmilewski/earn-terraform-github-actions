@@ -21,5 +21,5 @@ RUN kubectl version --client && \
     ls -l /usr/local/bin/doctl
 
 # Set the entrypoint to sh
-ENTRYPOINT ["/bin/sh"]
+ENTRYPOINT ["/bin/sh", "-c"]
 
