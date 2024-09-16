@@ -1,33 +1,26 @@
-name: Deploy to Kubernetes
+name: Check Kubernetes Nodes
 
 on:
   workflow_dispatch:  # Allows manual triggering from the GitHub Actions tab
 
 jobs:
-  deploy:
+  check-nodes:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Log in to DigitalOcean Container Registry
       - name: Log in to DigitalOcean Container Registry
         run: |
           echo "${{ secrets.DO_API_TOKEN }}" | docker login registry.digitalocean.com -u doctl --password-stdin
 
-      # Step 2: Pull the Docker image from the registry
       - name: Pull Docker Image
         run: docker pull registry.digitalocean.com/k8s1/doctl_kubectl:latest
 
-      # Step 3: Run commands inside the Docker container to check nodes
-      - name: Check Kubernetes Nodes
+      - name: Run kubectl get nodes
         run: |
           docker run --rm \
             -e DO_API_TOKEN=${{ secrets.DO_API_TOKEN }} \
             registry.digitalocean.com/k8s1/doctl_kubectl:latest /bin/sh -c "
-            # Authenticate with DigitalOcean API
-            doctl auth init -t \$DO_API_TOKEN
-            # Retrieve kubeconfig from your Kubernetes cluster
-            doctl kubernetes cluster kubeconfig save example-k8s-cluster  # Replace with your actual cluster name
-            # Check if kubectl can retrieve the nodes
+            doctl auth init -t \$DO_API_TOKEN && \
             kubectl get nodes
             "
 
