@@ -12,8 +12,14 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Run Docker Container for Kubernetes Deployment
+      - name: Login to DigitalOcean Container Registry
+        run: echo "${{ secrets.DO_API_TOKEN }}" | docker login registry.digitalocean.com -u oauth2accesstoken --password-stdin
+
+      - name: Set Up Docker and Deploy to Kubernetes
         run: |
+          # Create the .kube directory if it doesn't exist
+          mkdir -p .kube
+          
           docker run --rm \
             --platform linux/amd64 \
             -e DO_API_TOKEN=${{ secrets.DO_API_TOKEN }} \
@@ -37,4 +43,5 @@ jobs:
               kubectl get deployments --kubeconfig /workspace/.kube/config && \
               kubectl rollout status deployment/your-deployment-name --kubeconfig /workspace/.kube/config
             "
+        shell: /usr/bin/bash -e {0}
 
