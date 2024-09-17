@@ -31,9 +31,17 @@ jobs:
             registry.digitalocean.com/k8s1/doctl_kubectl:latest /bin/sh -c "
             # Authenticate with DigitalOcean API
             doctl auth init -t \$DO_API_TOKEN && \
-            # Retrieve kubeconfig from your Kubernetes cluster
-            doctl kubernetes cluster kubeconfig save example-k8s-cluster && \
+            # Retrieve kubeconfig from your Kubernetes cluster and save it to a known location
+            doctl kubernetes cluster kubeconfig save example-k8s-cluster -o /root/.kube/config && \
+            # Print the kubeconfig for debugging
+            cat /root/.kube/config && \
+            # Check Kubernetes nodes
+            kubectl get nodes --kubeconfig /root/.kube/config && \
             # Apply the Kubernetes manifests
-            kubectl apply -f /deployments/
+            kubectl apply -f /deployments/ --kubeconfig /root/.kube/config && \
+            # Verify the deployment status
+            kubectl get pods --kubeconfig /root/.kube/config && \
+            kubectl get deployments --kubeconfig /root/.kube/config && \
+            kubectl rollout status deployment/your-deployment-name --kubeconfig /root/.kube/config
             "
 
