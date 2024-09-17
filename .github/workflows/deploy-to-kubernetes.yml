@@ -1,47 +1,40 @@
 name: Deploy to Kubernetes
 
 on:
-  workflow_dispatch:  # Allows manual triggering from the GitHub Actions tab
+  push:
+    branches:
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
-      # Step 1: Checkout code
-      - name: Checkout code
+      - name: Checkout Repository
         uses: actions/checkout@v3
 
-      # Step 2: Log in to DigitalOcean Container Registry
-      - name: Log in to DigitalOcean Container Registry
-        run: |
-          echo "${{ secrets.DO_API_TOKEN }}" | docker login registry.digitalocean.com -u doctl --password-stdin
-
-      # Step 3: Pull Docker image with doctl and kubectl
-      - name: Pull Docker Image
-        run: docker pull registry.digitalocean.com/k8s1/doctl_kubectl:latest
-
-      # Step 4: Run doctl and kubectl commands inside the Docker container
-      - name: Run doctl and kubectl
+      - name: Run Docker Container for Kubernetes Deployment
         run: |
           docker run --rm \
             --platform linux/amd64 \
             -e DO_API_TOKEN=${{ secrets.DO_API_TOKEN }} \
             -v $(pwd)/deployments:/deployments \
+            -v $(pwd)/.kube:/root/.kube \
             registry.digitalocean.com/k8s1/doctl_kubectl:latest /bin/sh -c "
-            # Authenticate with DigitalOcean API
-            doctl auth init -t \$DO_API_TOKEN && \
-            # Retrieve kubeconfig from your Kubernetes cluster and save it to a known location
-            doctl kubernetes cluster kubeconfig save example-k8s-cluster -o /root/.kube/config && \
-            # Print the kubeconfig for debugging
-            cat /root/.kube/config && \
-            # Check Kubernetes nodes
-            kubectl get nodes --kubeconfig /root/.kube/config && \
-            # Apply the Kubernetes manifests
-            kubectl apply -f /deployments/ --kubeconfig /root/.kube/config && \
-            # Verify the deployment status
-            kubectl get pods --kubeconfig /root/.kube/config && \
-            kubectl get deployments --kubeconfig /root/.kube/config && \
-            kubectl rollout status deployment/your-deployment-name --kubeconfig /root/.kube/config
+              # Authenticate with DigitalOcean API
+              doctl auth init -t \$DO_API_TOKEN && \
+              # Retrieve kubeconfig from your Kubernetes cluster and save it to a known location
+              doctl kubernetes cluster kubeconfig save example-k8s-cluster -o /root/.kube/config && \
+              # Copy kubeconfig to the repo
+              cp /root/.kube/config /workspace/.kube/config && \
+              # Print the kubeconfig for debugging
+              echo 'kubeconfig:' && cat /workspace/.kube/config && \
+              # Use the kubeconfig for kubectl commands
+              kubectl get nodes --kubeconfig /workspace/.kube/config && \
+              # Apply the Kubernetes manifests
+              kubectl apply -f /deployments/ --kubeconfig /workspace/.kube/config && \
+              # Verify the deployment status
+              kubectl get pods --kubeconfig /workspace/.kube/config && \
+              kubectl get deployments --kubeconfig /workspace/.kube/config && \
+              kubectl rollout status deployment/your-deployment-name --kubeconfig /workspace/.kube/config
             "
 
